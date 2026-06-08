@@ -40,7 +40,7 @@ def display_pdf(file_path):
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
     
-    pdf_viewer(input=pdf_bytes, width=700, height=800)
+    pdf_viewer(input=pdf_bytes, height=800)
 
     
 # FIL D'ARIANE (Pour savoir où l'on se trouve et revenir en arrière facilement)
