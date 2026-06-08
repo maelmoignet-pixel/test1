@@ -29,24 +29,22 @@ def back_to_folder():
 #Lecture et affichage de pdf
 
 def display_pdf(file_path):
-    # 1. Lecture du fichier PDF en octets
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
 
-    # 2. Encodage en Base64
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
-    # 3. Utilisation d'une balise <object> au lieu de <iframe>
-    # C'est cette structure que Chrome ne bloque pas et qui force l'affichage du PDF
     pdf_display = f"""
-        <object data="data:application/pdf;base64,{base64_pdf}" type="application/pdf" width="100%" height="800px">
-            <p>Votre navigateur ne peut pas afficher ce PDF. 
-            <a href="data:application/pdf;base64,{base64_pdf}" download="{file_path}">Téléchargez-le ici</a>.</p>
-        </object>
+        <iframe
+            src="data:application/pdf;base64,{base64_pdf}#toolbar=0&navpanes=0&scrollbar=0"
+            width="100%"
+            height="800px"
+            style="border: none;"
+            type="application/pdf"
+        ></iframe>
     """
 
-    # 4. Affichage dans l'application
-    st.markdown(pdf_display, unsafe_allow_html=True)
+    components.html(pdf_display, height=820, scrolling=False)
 
 # FIL D'ARIANE (Pour savoir où l'on se trouve et revenir en arrière facilement)
 if st.session_state.current_folder is not None:
