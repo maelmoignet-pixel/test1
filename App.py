@@ -38,54 +38,32 @@ def display_pdf(file_path):
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
 
-# --- Serveur HTTP local pour servir les PDFs ---
-PDF_SERVER_PORT = 8502  # Port différent de Streamlit (8501)
-PDF_DIR = os.path.dirname(os.path.abspath(__file__))  # Dossier du script
-
-def start_pdf_server():
-    """Lance un serveur HTTP local dans un thread séparé."""
-    if "pdf_server_started" not in st.session_state:
-        handler = http.server.SimpleHTTPRequestHandler
-        
-        class SilentHandler(handler):
-            def log_message(self, format, *args):
-                pass  # Supprime les logs dans le terminal
-            def do_GET(self):
-                # Bloque tout sauf les PDFs
-                if not self.path.endswith(".pdf"):
-                    self.send_error(403)
-                    return
-                super().do_GET()
-
-        def run():
-            os.chdir(PDF_DIR)
-            with socketserver.TCPServer(("", PDF_SERVER_PORT), SilentHandler) as httpd:
-                httpd.serve_forever()
-
-        thread = threading.Thread(target=run, daemon=True)
-        thread.start()
-        st.session_state.pdf_server_started = True
-
 def display_pdf(file_path):
-    start_pdf_server()
-    
     if not os.path.exists(file_path):
         st.error(f"❌ Fichier introuvable : {file_path}")
         return
 
-    # Nom du fichier uniquement (le serveur sert depuis le dossier du script)
-    filename = os.path.basename(file_path)
-    pdf_url = f"http://localhost:{PDF_SERVER_PORT}/{filename}#toolbar=0&navpanes=0"
+    with open(file_path, "rb") as f:
+        pdf_bytes = f.read()
 
+    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+
+    # Le JS crée un blob URL côté navigateur → Chrome l'accepte
     html = f"""
     <html>
     <body style="margin:0; padding:0;">
-        <iframe
-            src="{pdf_url}"
-            width="100%"
-            height="800px"
-            style="border:none;"
-        ></iframe>
+        <iframe id="pdfFrame" width="100%" height="800px" style="border:none;"></iframe>
+        <script>
+            const base64 = "{base64_pdf}";
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {{
+                bytes[i] = binary.charCodeAt(i);
+            }}
+            const blob = new Blob([bytes], {{ type: "application/pdf" }});
+            const url = URL.createObjectURL(blob);
+            document.getElementById("pdfFrame").src = url + "#toolbar=0&navpanes=0";
+        </script>
     </body>
     </html>
     """
