@@ -2,6 +2,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 import base64
 import os
+import threading
+import http.server
+import socketserver
 
 st.title("test")
 
@@ -35,31 +38,59 @@ def display_pdf(file_path):
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
 
-#Lecture et affichage de pdf
+# --- Serveur HTTP local pour servir les PDFs ---
+PDF_SERVER_PORT = 8502  # Port différent de Streamlit (8501)
+PDF_DIR = os.path.dirname(os.path.abspath(__file__))  # Dossier du script
+
+def start_pdf_server():
+    """Lance un serveur HTTP local dans un thread séparé."""
+    if "pdf_server_started" not in st.session_state:
+        handler = http.server.SimpleHTTPRequestHandler
+        
+        class SilentHandler(handler):
+            def log_message(self, format, *args):
+                pass  # Supprime les logs dans le terminal
+            def do_GET(self):
+                # Bloque tout sauf les PDFs
+                if not self.path.endswith(".pdf"):
+                    self.send_error(403)
+                    return
+                super().do_GET()
+
+        def run():
+            os.chdir(PDF_DIR)
+            with socketserver.TCPServer(("", PDF_SERVER_PORT), SilentHandler) as httpd:
+                httpd.serve_forever()
+
+        thread = threading.Thread(target=run, daemon=True)
+        thread.start()
+        st.session_state.pdf_server_started = True
 
 def display_pdf(file_path):
-    with open(file_path, "rb") as f:
-        pdf_bytes = f.read()
+    start_pdf_server()
+    
+    if not os.path.exists(file_path):
+        st.error(f"❌ Fichier introuvable : {file_path}")
+        return
 
-    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+    # Nom du fichier uniquement (le serveur sert depuis le dossier du script)
+    filename = os.path.basename(file_path)
+    pdf_url = f"http://localhost:{PDF_SERVER_PORT}/{filename}#toolbar=0&navpanes=0"
 
-    # On utilise un <embed> avec data URI — plus fiable que iframe dans Streamlit
-    pdf_display = f"""
+    html = f"""
     <html>
-    <body style="margin:0; padding:0; background:white;">
-        <embed
-            src="data:application/pdf;base64,{base64_pdf}#toolbar=0&navpanes=0"
-            type="application/pdf"
+    <body style="margin:0; padding:0;">
+        <iframe
+            src="{pdf_url}"
             width="100%"
             height="800px"
             style="border:none;"
-        />
+        ></iframe>
     </body>
     </html>
     """
-
-    components.html(pdf_display, height=820, scrolling=False)
-
+    components.html(html, height=820, scrolling=False)
+    
 # FIL D'ARIANE (Pour savoir où l'on se trouve et revenir en arrière facilement)
 if st.session_state.current_folder is not None:
     path = f"📂 **Accueil**"
