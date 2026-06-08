@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import base64
+import os
 
 st.title("test")
 
@@ -26,6 +27,14 @@ def reset_navigation():
 def back_to_folder():
     st.session_state.current_subfolder = None
 
+def display_pdf(file_path):
+    if not os.path.exists(file_path):
+        st.error(f"❌ Fichier introuvable : {file_path}")
+        return
+        
+    with open(file_path, "rb") as f:
+        pdf_bytes = f.read()
+
 #Lecture et affichage de pdf
 
 def display_pdf(file_path):
@@ -34,14 +43,19 @@ def display_pdf(file_path):
 
     base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
+    # On utilise un <embed> avec data URI — plus fiable que iframe dans Streamlit
     pdf_display = f"""
-        <iframe
-            src="data:application/pdf;base64,{base64_pdf}#toolbar=0&navpanes=0&scrollbar=0"
+    <html>
+    <body style="margin:0; padding:0; background:white;">
+        <embed
+            src="data:application/pdf;base64,{base64_pdf}#toolbar=0&navpanes=0"
+            type="application/pdf"
             width="100%"
             height="800px"
-            style="border: none;"
-            type="application/pdf"
-        ></iframe>
+            style="border:none;"
+        />
+    </body>
+    </html>
     """
 
     components.html(pdf_display, height=820, scrolling=False)
