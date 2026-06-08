@@ -1,5 +1,5 @@
 import streamlit as st
-import base64
+import streamlit.components.v1 as components
 
 st.title("test")
 
@@ -28,15 +28,13 @@ def back_to_folder():
 #Lecture et affichage de pdf
 
 def display_pdf(file_path):
-    # Lecture du fichier PDF et encodage en base64
-    with open(file_path, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-
-    # Intégration du PDF dans une balise HTML <iframe_>
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
-
-    # Affichage dans Streamlit
-    st.markdown(pdf_display, unsafe_allow_html=True)
+    # On utilise le composant HTML natif de Streamlit pour encapsuler l'iframe
+    # width=700 et height=800 peuvent être ajustés selon vos besoins
+    components.html(
+        f'<iframe src="{file_path}" width="100%" height="800px"></iframe>',
+        height=800,
+        scrolling=True
+    )
 
 # FIL D'ARIANE (Pour savoir où l'on se trouve et revenir en arrière facilement)
 if st.session_state.current_folder is not None:
