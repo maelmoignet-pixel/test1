@@ -30,13 +30,7 @@ def reset_navigation():
 def back_to_folder():
     st.session_state.current_subfolder = None
 
-def display_pdf(file_path):
-    if not os.path.exists(file_path):
-        st.error(f"❌ Fichier introuvable : {file_path}")
-        return
-        
-    with open(file_path, "rb") as f:
-        pdf_bytes = f.read()
+
 
 def display_pdf(file_path):
     if not os.path.exists(file_path):
