@@ -121,7 +121,7 @@ elif st.session_state.current_subfolder == "Démonstration par récurrence":
 elif st.session_state.current_subfolder == "Opérations sur les limites":
     st.subheader("Cours & Exercices : Opérations sur les limites")
     st.write("Ici, insérez les tableaux de limites (somme, produit, quotient) et les formes indéterminées.")
-    
+    display_pdf("bac-blanc TC.pdf")
     # Bouton Retour au dossier "Suites"
     st.write("---")
     if st.button("⬅️ Retour aux sous-dossiers"):
