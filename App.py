@@ -5,6 +5,7 @@ import os
 import threading
 import http.server
 import socketserver
+from streamlit_pdf_viewer import pdf_viewer
 
 st.title("test")
 
@@ -31,37 +32,16 @@ def back_to_folder():
     st.session_state.current_subfolder = None
 
 
-
 def display_pdf(file_path):
     if not os.path.exists(file_path):
         st.error(f"❌ Fichier introuvable : {file_path}")
         return
-
+    
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
+    
+    pdf_viewer(input=pdf_bytes, width=700, height=800)
 
-    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-
-    # Le JS crée un blob URL côté navigateur → Chrome l'accepte
-    html = f"""
-    <html>
-    <body style="margin:0; padding:0;">
-        <iframe id="pdfFrame" width="100%" height="800px" style="border:none;"></iframe>
-        <script>
-            const base64 = "{base64_pdf}";
-            const binary = atob(base64);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {{
-                bytes[i] = binary.charCodeAt(i);
-            }}
-            const blob = new Blob([bytes], {{ type: "application/pdf" }});
-            const url = URL.createObjectURL(blob);
-            document.getElementById("pdfFrame").src = url + "#toolbar=0&navpanes=0";
-        </script>
-    </body>
-    </html>
-    """
-    components.html(html, height=820, scrolling=False)
     
 # FIL D'ARIANE (Pour savoir où l'on se trouve et revenir en arrière facilement)
 if st.session_state.current_folder is not None:
