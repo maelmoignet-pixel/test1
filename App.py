@@ -75,7 +75,7 @@ elif st.session_state.current_folder == "Suites numériques" and st.session_stat
 elif st.session_state.current_subfolder == "Démonstration par récurrence":
     st.subheader("Cours & Exercices : Démonstration par récurrence")
     st.write("Ici, insérez votre contenu, vos scripts Python ou vos exercices sur la récurrence.")
-    display_pdf("cours_term_2025_Suites_cours_VP.pdf")
+    #display_pdf("cours_term_2025_Suites_cours_VP.pdf")
     # Bouton Retour au dossier "Suites"
     st.write("---")
     if st.button("⬅️ Retour aux sous-dossiers"):
