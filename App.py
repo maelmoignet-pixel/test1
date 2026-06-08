@@ -100,13 +100,4 @@ else:
         reset_navigation()
         st.rerun()
         
-def display_pdf(file_path):
-    # Lecture du fichier PDF et encodage en base64
-    with open(file_path, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
 
-    # Intégration du PDF dans une balise HTML <iframe_>
-    pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
-
-    # Affichage dans Streamlit
-    st.markdown(pdf_display, unsafe_allow_html=True)
